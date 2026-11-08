@@ -5,12 +5,12 @@ import android.content.pm.ApplicationInfo
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.pranav.applock.data.repository.AppLockRepository
+import dev.pranav.applock.features.applist.domain.AppListMode
 import dev.pranav.applock.features.applist.domain.AppSearchManager
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @OptIn(FlowPreview::class)
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -20,7 +20,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _allApps = MutableStateFlow<Set<ApplicationInfo>>(emptySet())
+    private val _allApps = MutableStateFlow(AppSearchManager.Apps())
+
+    private val _appListMode = MutableStateFlow(appLockRepository.getAppListMode())
+    val appListMode: StateFlow<AppListMode> = _appListMode.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -31,7 +34,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val lockedAppsFlow: StateFlow<List<ApplicationInfo>> =
         combine(_allApps, _lockedApps, _debouncedQuery) { apps, locked, query ->
-            apps.filter { it.packageName in locked }
+            apps.installed.filter { it.packageName in locked }
                 .filter { it.matchesQuery(query) }
                 .sortedBy { it.loadLabel(getApplication<Application>().packageManager).toString() }
         }.stateIn(
@@ -41,9 +44,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         )
 
     val unlockedAppsFlow: StateFlow<List<ApplicationInfo>> =
-        combine(_allApps, _lockedApps, _debouncedQuery) { apps, locked, query ->
-            apps.filterNot { it.packageName in locked }
-                .filter { it.matchesQuery(query) }
+        combine(_allApps, _lockedApps, _appListMode) { apps, locked, mode ->
+            apps.installed.filter { app ->
+                app.packageName !in locked &&
+                    mode.includes(app.flags, app.packageName in apps.launchablePackages)
+            }
                 .sortedBy { it.loadLabel(getApplication<Application>().packageManager).toString() }
         }.stateIn(
             scope = viewModelScope,
@@ -74,13 +79,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val apps = withContext(Dispatchers.IO) {
-                    appSearchManager.loadApps(true)
-                }
-                _allApps.value = apps
+                _allApps.value = appSearchManager.loadApps()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 e.printStackTrace()
-                _allApps.value = emptySet()
+                _allApps.value = AppSearchManager.Apps()
             } finally {
                 _isLoading.value = false
             }
@@ -89,6 +93,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun loadLockedApps() {
         _lockedApps.value = appLockRepository.getLockedApps()
+    }
+
+    fun setAppListMode(mode: AppListMode) {
+        appLockRepository.setAppListMode(mode)
+        _appListMode.value = mode
     }
 
     fun lockApps(packageNames: List<String>) {
