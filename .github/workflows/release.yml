@@ -26,9 +26,9 @@ jobs:
           java-version: '17'
 
       - uses: android-actions/setup-android@v3.2.2
-
-      - name: Install Android SDK and signing tools
-        run: sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
+        with:
+          packages: "platforms;android-37.0 build-tools;37.0.0"
+          log-accepted-android-sdk-licenses: false
 
       - uses: gradle/actions/setup-gradle@v4.4.1
 
