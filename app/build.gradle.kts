@@ -14,8 +14,8 @@ android {
         applicationId = "dev.pranav.applock"
         minSdk = 26
         targetSdk = 37
-        versionCode = 251
-        versionName = "2.5.1"
+        versionCode = 252
+        versionName = "2.5.1-filters.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -31,7 +31,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
