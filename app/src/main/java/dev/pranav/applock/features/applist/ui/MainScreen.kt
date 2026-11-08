@@ -53,7 +53,6 @@ import dev.pranav.applock.core.utils.isAccessibilityServiceEnabled
 import dev.pranav.applock.core.utils.openAccessibilitySettings
 import dev.pranav.applock.data.repository.BackendImplementation
 import dev.pranav.applock.features.applist.domain.AppListMode
-import dev.pranav.applock.ui.components.DonateModalBottomSheet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
@@ -138,13 +137,6 @@ fun MainScreen(
                 )
             }
         )
-    }
-
-    var showDonateDialog by remember { mutableStateOf(appLockRepository.isShowDonateLink()) }
-    if (showDonateDialog && !showCommunityLink) {
-        DonateModalBottomSheet {
-            appLockRepository.setShowDonateLink(false); showDonateDialog = false
-        }
     }
 
     Scaffold(

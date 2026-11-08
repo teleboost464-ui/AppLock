@@ -95,9 +95,6 @@ class AppLockRepository(private val context: Context) {
 
     fun isShowCommunityLink(): Boolean = preferencesRepository.isShowCommunityLink()
     fun setCommunityLinkShown(shown: Boolean) = preferencesRepository.setCommunityLinkShown(shown)
-    fun isShowDonateLink(): Boolean = preferencesRepository.isShowDonateLink(context)
-    fun setShowDonateLink(show: Boolean) = preferencesRepository.setShowDonateLink(context, show)
-
     fun isLoggingEnabled(): Boolean = preferencesRepository.isLoggingEnabled()
     fun setLoggingEnabled(enabled: Boolean) = preferencesRepository.setLoggingEnabled(enabled)
 

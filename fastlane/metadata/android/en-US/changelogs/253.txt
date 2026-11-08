@@ -1,0 +1,2 @@
+Removed the donation button and prompts.
+Updated Settings links to the maintained AppLock fork and its issue tracker.
