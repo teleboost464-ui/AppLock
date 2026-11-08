@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import dev.pranav.applock.core.utils.SecurityUtils
+import dev.pranav.applock.features.applist.domain.AppListMode
 
 /**
  * Repository for managing application preferences and settings.
@@ -98,6 +99,13 @@ class PreferencesRepository(context: Context) {
         return settingsPrefs.getBoolean(KEY_SHOW_SYSTEM_APPS, false)
     }
 
+    fun setAppListMode(mode: AppListMode) {
+        settingsPrefs.edit { putString(KEY_APP_LIST_MODE, mode.name) }
+    }
+
+    fun getAppListMode(): AppListMode =
+        AppListMode.fromPreference(settingsPrefs.getString(KEY_APP_LIST_MODE, null))
+
     fun setAntiUninstallEnabled(enabled: Boolean) {
         settingsPrefs.edit { putBoolean(KEY_ANTI_UNINSTALL, enabled) }
     }
@@ -189,6 +197,7 @@ class PreferencesRepository(context: Context) {
         private const val KEY_APPLOCK_ENABLED = "applock_enabled"
         private const val KEY_AUTO_UNLOCK = "auto_unlock"
         private const val KEY_SHOW_SYSTEM_APPS = "show_system_apps"
+        private const val KEY_APP_LIST_MODE = "app_list_mode"
         private const val KEY_LOCK_TYPE = "lock_type"
 
         private const val DEFAULT_PROTECT_ENABLED = true

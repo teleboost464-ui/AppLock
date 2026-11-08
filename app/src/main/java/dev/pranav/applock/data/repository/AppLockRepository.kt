@@ -2,6 +2,7 @@ package dev.pranav.applock.data.repository
 
 import android.content.Context
 import dev.pranav.applock.data.manager.BackendServiceManager
+import dev.pranav.applock.features.applist.domain.AppListMode
 import dev.pranav.applock.services.AppLockManager
 
 /**
@@ -71,6 +72,8 @@ class AppLockRepository(private val context: Context) {
     fun shouldDisableHaptics(): Boolean = preferencesRepository.shouldDisableHaptics()
     fun setShowSystemApps(enabled: Boolean) = preferencesRepository.setShowSystemApps(enabled)
     fun shouldShowSystemApps(): Boolean = preferencesRepository.shouldShowSystemApps()
+    fun setAppListMode(mode: AppListMode) = preferencesRepository.setAppListMode(mode)
+    fun getAppListMode(): AppListMode = preferencesRepository.getAppListMode()
 
     fun setAntiUninstallEnabled(enabled: Boolean) =
         preferencesRepository.setAntiUninstallEnabled(enabled)

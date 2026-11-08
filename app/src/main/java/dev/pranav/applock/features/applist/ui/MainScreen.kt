@@ -52,6 +52,7 @@ import dev.pranav.applock.core.utils.hasUsagePermission
 import dev.pranav.applock.core.utils.isAccessibilityServiceEnabled
 import dev.pranav.applock.core.utils.openAccessibilitySettings
 import dev.pranav.applock.data.repository.BackendImplementation
+import dev.pranav.applock.features.applist.domain.AppListMode
 import dev.pranav.applock.ui.components.DonateModalBottomSheet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -331,6 +332,7 @@ fun MainScreen(
     }
 
     if (showAddAppsSheet) {
+        val appListMode by mainViewModel.appListMode.collectAsState()
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         val selectedPackages = remember { mutableStateListOf<String>() }
         var bottomSheetSearchQuery by remember { mutableStateOf("") }
@@ -344,6 +346,8 @@ fun MainScreen(
         ) {
             AddProtectedAppsSheetContent(
                 unlockedApps = unlockedApps,
+                appListMode = appListMode,
+                onAppListModeChanged = mainViewModel::setAppListMode,
                 searchQuery = bottomSheetSearchQuery,
                 onSearchQueryChanged = { bottomSheetSearchQuery = it },
                 selectedPackages = selectedPackages,
@@ -451,6 +455,8 @@ private fun EmptyDashboardState(modifier: Modifier = Modifier) {
 @Composable
 private fun AddProtectedAppsSheetContent(
     unlockedApps: List<ApplicationInfo>,
+    appListMode: AppListMode,
+    onAppListModeChanged: (AppListMode) -> Unit,
     searchQuery: String,
     onSearchQueryChanged: (String) -> Unit,
     selectedPackages: List<String>,
@@ -545,11 +551,26 @@ private fun AddProtectedAppsSheetContent(
             content = {},
         )
 
+        AppListFilter(
+            mode = appListMode,
+            onModeChanged = onAppListModeChanged,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
         // List
         LazyColumn(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
+            if (filteredApps.isEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.app_list_no_matches),
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
             items(filteredApps, key = { it.packageName }) { appInfo ->
                 val isSelected = selectedPackages.contains(appInfo.packageName)
                 SelectableAppItem(
@@ -561,6 +582,42 @@ private fun AddProtectedAppsSheetContent(
         }
     }
 }
+
+@Composable
+private fun AppListFilter(
+    mode: AppListMode,
+    onModeChanged: (AppListMode) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box(modifier) {
+        OutlinedButton(onClick = { expanded = true }) {
+            Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(mode.labelRes))
+            Spacer(Modifier.width(4.dp))
+            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            AppListMode.entries.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(option.labelRes)) },
+                    onClick = {
+                        expanded = false
+                        onModeChanged(option)
+                    }
+                )
+            }
+        }
+    }
+}
+
+private val AppListMode.labelRes: Int
+    get() = when (this) {
+        AppListMode.ESSENTIAL -> R.string.app_list_essential
+        AppListMode.INSTALLED -> R.string.app_list_installed
+        AppListMode.SYSTEM -> R.string.app_list_system
+    }
 
 @Composable
 private fun ProtectedAppItem(

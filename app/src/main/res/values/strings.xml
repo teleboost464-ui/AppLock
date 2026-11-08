@@ -123,6 +123,10 @@ Make sure you have Shizuku installed and enabled via ADB. Tap \'Next\' to grant 
     <string name="main_screen_settings_cd">Settings</string>
     <string name="main_screen_loading_applications_text">Loading applications…</string>
     <string name="main_screen_search_apps_placeholder">Search apps</string>
+    <string name="app_list_essential">Essential apps</string>
+    <string name="app_list_installed">Installed apps</string>
+    <string name="app_list_system">System apps</string>
+    <string name="app_list_no_matches">No matching apps</string>
     <string name="main_screen_search_cd">Search</string>
     <string name="main_screen_empty_search_title">No apps found</string>
     <string name="main_screen_empty_search_subtitle">Try adjusting your search</string>
